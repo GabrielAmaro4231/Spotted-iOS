@@ -1,10 +1,3 @@
-//
-//  SpottedApp.swift
-//  Spotted
-//
-//  Created by Gabriel Amaro on 25/12/25.
-//
-
 import SwiftUI
 
 @main
