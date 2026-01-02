@@ -49,14 +49,29 @@ struct AddFlightView: View {
         }
     }
 
+    // MARK: - Save Logic with Timeout
+
     private func saveFlight() async {
         isLoading = true
         errorMessage = nil
 
         do {
-            let info = try await JetAPIService.fetchAircraftInfo(
-                registration: aircraftPrefix
-            )
+            let info = try await withThrowingTaskGroup(of: JetAPIImage.self) { group in
+                group.addTask {
+                    try await JetAPIService.fetchAircraftInfo(
+                        registration: aircraftPrefix
+                    )
+                }
+
+                group.addTask {
+                    try await Task.sleep(nanoseconds: 5_000_000_000)
+                    throw URLError(.timedOut)
+                }
+
+                let result = try await group.next()!
+                group.cancelAll()
+                return result
+            }
 
             let newFlight = Flight(
                 aircraftPrefix: aircraftPrefix,
@@ -64,14 +79,28 @@ struct AddFlightView: View {
                 date: Date(),
                 aircraftModel: info.Aircraft,
                 airlineName: info.Airline,
-                imageURL: URL(string: info.Image)
+                imageURL: URL(string: info.Image),
+                needsRefresh: false
             )
 
             flights.append(newFlight)
             dismiss()
 
         } catch {
-            errorMessage = "Unable to fetch aircraft information."
+            errorMessage = "Aircraft data unavailable. Saved for later refresh."
+
+            let fallbackFlight = Flight(
+                aircraftPrefix: aircraftPrefix,
+                airport: selectedAirport,
+                date: Date(),
+                aircraftModel: "Unknown aircraft",
+                airlineName: "Unknown airline",
+                imageURL: nil,
+                needsRefresh: true
+            )
+
+            flights.append(fallbackFlight)
+            dismiss()
         }
 
         isLoading = false
