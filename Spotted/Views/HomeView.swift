@@ -23,8 +23,16 @@ struct HomeView: View {
                         Text(flight.aircraftRegistration)
                             .font(.headline)
 
-                        Text(flight.aircraftType)
-                            .foregroundColor(.secondary)
+                        let aircraftType = flight.aircraftType?
+                            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+                        if !aircraftType.isEmpty {
+                            Text(aircraftType)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("Aircraft type unknown")
+                                .foregroundStyle(.tertiary)
+                        }
 
                         Text(
                             String(

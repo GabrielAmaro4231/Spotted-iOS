@@ -5,33 +5,32 @@ import SwiftData
 final class Flight {
     var id: UUID
     var aircraftRegistration: String
-    var aircraftType: String
-    var date: Date
-
-    // Location (core)
+    var aircraftType: String?          // ← now optional
+    var imageURL: String?              // ← JetPhotos
     var latitude: Double
     var longitude: Double
-
-    // Location (optional metadata, future use)
     var city: String?
     var country: String?
+    var date: Date
 
     init(
         aircraftRegistration: String,
-        aircraftType: String,
-        date: Date = .now,
+        aircraftType: String? = nil,
+        imageURL: String? = nil,
         latitude: Double,
         longitude: Double,
         city: String? = nil,
-        country: String? = nil
+        country: String? = nil,
+        date: Date = .now
     ) {
         self.id = UUID()
         self.aircraftRegistration = aircraftRegistration
         self.aircraftType = aircraftType
-        self.date = date
+        self.imageURL = imageURL
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
         self.country = country
+        self.date = date
     }
 }

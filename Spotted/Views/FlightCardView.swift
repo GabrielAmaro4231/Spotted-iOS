@@ -3,14 +3,24 @@ import SwiftUI
 struct FlightCardView: View {
     let flight: Flight
 
+    private var aircraftType: String {
+        flight.aircraftType?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
 
             Text(flight.aircraftRegistration)
                 .font(.headline)
 
-            Text(flight.aircraftType)
-                .foregroundStyle(.secondary)
+            if !aircraftType.isEmpty {
+                Text(aircraftType)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Aircraft type unknown")
+                    .foregroundStyle(.tertiary)
+            }
 
             Text(
                 String(

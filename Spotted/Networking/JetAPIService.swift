@@ -1,25 +1,65 @@
 import Foundation
 
+// MARK: - Public model used by the app
+
+struct JetAircraftInfo {
+    let model: String
+    let imageURL: String
+}
+
+// MARK: - Internal API response models
+
+private struct JetAPIResponse: Decodable {
+    let Reg: String
+    let Images: [JetAPIImage]
+}
+
+private struct JetAPIImage: Decodable {
+    let Image: String
+    let Aircraft: String
+    let Airline: String
+}
+
+// MARK: - Service
+
+enum JetAPIError: Error {
+    case timeout
+    case invalidResponse
+    case noImages
+}
+
 final class JetAPIService {
 
-    static func fetchAircraftInfo(
+    static let shared = JetAPIService()
+    private init() {}
+
+    func fetchAircraftInfo(
         registration: String
-    ) async throws -> JetAPIImage {
+    ) async throws -> JetAircraftInfo {
 
-        let urlString =
-        "https://www.jetapi.dev/api?reg=\(registration)&photos=1&flights=0&only_jp=true"
-
-        guard let url = URL(string: urlString) else {
-            throw URLError(.badURL)
+        guard let url = URL(
+            string: "https://api.jetapi.com/aircraft/\(registration)"
+        ) else {
+            throw JetAPIError.invalidResponse
         }
 
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let decoded = try JSONDecoder().decode(JetAPIResponse.self, from: data)
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 5   // ⏱ hard limit
 
-        guard let image = decoded.Images.first else {
-            throw URLError(.cannotParseResponse)
+        let (data, _) = try await URLSession.shared.data(for: request)
+
+        let decoded = try JSONDecoder().decode(
+            JetAPIResponse.self,
+            from: data
+        )
+
+        guard let firstImage = decoded.Images.first else {
+            throw JetAPIError.noImages
         }
 
-        return image
+        return JetAircraftInfo(
+            model: firstImage.Aircraft,
+            imageURL: firstImage.Image
+        )
     }
 }

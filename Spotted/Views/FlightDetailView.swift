@@ -1,17 +1,26 @@
 import SwiftUI
+import SwiftData
 
 struct FlightDetailView: View {
+    @Environment(\.modelContext) private var context
+
     let flight: Flight
 
-    // MARK: - Derived values (SwiftUI-safe)
+    // MARK: - Edit state
 
-    private var city: String {
-        flight.city?
+    @State private var isEditing = false
+    @State private var editedAircraftType = ""
+    @State private var editedImageURL = ""
+
+    // MARK: - Derived values
+
+    private var aircraftType: String {
+        flight.aircraftType?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
 
-    private var country: String {
-        flight.country?
+    private var imageURL: String {
+        flight.imageURL?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
 
@@ -19,60 +28,127 @@ struct FlightDetailView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm MMM d yyyy"
 
-        return "Aircraft \(flight.aircraftRegistration) spotted from here at \(formatter.string(from: flight.date))"
+        return "Aircraft \(flight.aircraftRegistration) spotted here at \(formatter.string(from: flight.date))"
+    }
+
+    private var coordinateLabel: String {
+        String(
+            format: "Lat %.5f, Lon %.5f",
+            flight.latitude,
+            flight.longitude
+        )
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(flight.aircraftRegistration)
-                        .font(.title2)
-                        .bold()
+                if isEditing {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("JetPhotos image URL")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
 
-                    Text(flight.aircraftType)
-                        .foregroundStyle(.secondary)
-
-                    Divider()
-
-                    if !city.isEmpty || !country.isEmpty {
-                        Label(
-                            [city, country]
-                                .filter { !$0.isEmpty }
-                                .joined(separator: ", "),
-                            systemImage: "location.fill"
+                        TextField(
+                            "https://...",
+                            text: $editedImageURL
                         )
-                        .font(.subheadline)
-                    } else {
-                        Label(
-                            String(
-                                format: "Lat %.5f, Lon %.5f",
-                                flight.latitude,
-                                flight.longitude
-                            ),
-                            systemImage: "location.fill"
-                        )
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textFieldStyle(.roundedBorder)
+                        .keyboardType(.URL)
+                        .textInputAutocapitalization(.never)
                     }
-
-                    Text(flight.date.formatted())
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-
-                    Divider()
-
-                    MiniMapView(
-                        latitude: flight.latitude,
-                        longitude: flight.longitude,
-                        title: mapTitle
-                    )
+                } else if let url = URL(string: imageURL), !imageURL.isEmpty {
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    } placeholder: {
+                        ProgressView()
+                    }
                 }
+
+                Divider()
+
+                Text(flight.aircraftRegistration)
+                    .font(.title2)
+                    .bold()
+
+                if isEditing {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Aircraft type")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        TextField(
+                            "e.g. Airbus A320",
+                            text: $editedAircraftType
+                        )
+                        .textFieldStyle(.roundedBorder)
+                    }
+                } else if !aircraftType.isEmpty {
+                    Text(aircraftType)
+                        .foregroundStyle(.secondary)
+                }
+
+                Divider()
+
+                Label(
+                    coordinateLabel,
+                    systemImage: "location.fill"
+                )
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+                Text(flight.date.formatted())
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                Divider()
+
+                MiniMapView(
+                    latitude: flight.latitude,
+                    longitude: flight.longitude,
+                    title: mapTitle
+                )
             }
             .padding()
         }
         .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(isEditing)   // ✅ THIS IS THE KEY LINE
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(isEditing ? "Done" : "Edit") {
+                    toggleEdit()
+                }
+            }
+        }
+        .onAppear {
+            editedAircraftType = aircraftType
+            editedImageURL = imageURL
+        }
+    }
+
+    // MARK: - Actions
+
+    private func toggleEdit() {
+        if isEditing {
+            saveChanges()
+        }
+        isEditing.toggle()
+    }
+
+    private func saveChanges() {
+        let type = editedAircraftType
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let image = editedImageURL
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        flight.aircraftType = type.isEmpty ? nil : type
+        flight.imageURL = image.isEmpty ? nil : image
+
+        try? context.save()
     }
 }
