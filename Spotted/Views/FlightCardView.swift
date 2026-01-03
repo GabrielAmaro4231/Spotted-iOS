@@ -6,27 +6,25 @@ struct FlightCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
 
-            Text(flight.aircraftPrefix)
+            Text(flight.aircraftRegistration)
                 .font(.headline)
 
-            Text(flight.aircraftModel)
-                .foregroundColor(.secondary)
+            Text(flight.aircraftType)
+                .foregroundStyle(.secondary)
 
-            Text(flight.airlineName)
-
-            if let airport = flight.airport {
-                Text("\(airport.iata) / \(airport.icao)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            } else {
-                Text("Unknown airport")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            Text(
+                String(
+                    format: "Lat %.4f, Lon %.4f",
+                    flight.latitude,
+                    flight.longitude
+                )
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
 
             Text(flight.date, style: .date)
                 .font(.caption2)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)

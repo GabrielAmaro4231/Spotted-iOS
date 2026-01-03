@@ -1,107 +1,73 @@
 import SwiftUI
 import SwiftData
+import CoreLocation
 
 struct AddFlightView: View {
-    @Environment(\.modelContext)
-    private var context
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
 
-    @Environment(\.dismiss)
-    private var dismiss
+    @StateObject private var locationManager = LocationManager()
 
-    @State private var aircraftPrefix = ""
-    @State private var selectedAirport: Airport = airports.first!
-
-    @State private var isLoading = false
-    @State private var errorMessage: String?
+    @State private var aircraftRegistration = ""
+    @State private var aircraftType = ""
 
     var body: some View {
         Form {
-            Section(header: Text("Aircraft")) {
-                TextField("Aircraft Registration", text: $aircraftPrefix)
-                    .textInputAutocapitalization(.characters)
+            Section("Aircraft") {
+                TextField("Registration", text: $aircraftRegistration)
+                TextField("Type", text: $aircraftType)
             }
 
-            Section(header: Text("Airport")) {
-                Picker("Airport", selection: $selectedAirport) {
-                    ForEach(airports) { airport in
-                        Text("\(airport.city) – \(airport.iata)")
-                            .tag(airport)
-                    }
+            Section("Location") {
+                if locationManager.isLoading {
+                    ProgressView("Getting location…")
+                } else if let error = locationManager.errorMessage {
+                    Text(error)
+                        .foregroundStyle(.red)
+                } else if let location = locationManager.location {
+                    Text(
+                        String(
+                            format: "Lat %.4f, Lon %.4f",
+                            location.coordinate.latitude,
+                            location.coordinate.longitude
+                        )
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                } else {
+                    Text("Location not available")
+                        .foregroundStyle(.secondary)
                 }
             }
 
-            if isLoading {
-                ProgressView("Fetching aircraft data…")
+            Button("Save") {
+                saveFlight()
             }
-
-            if let errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-            }
+            .disabled(!canSave)
         }
-        .navigationTitle("New Spotting")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Save") {
-                    Task {
-                        await saveFlight()
-                    }
-                }
-                .disabled(aircraftPrefix.isEmpty || isLoading)
-            }
+        .navigationTitle("Add Aircraft")
+        .onAppear {
+            locationManager.requestLocation()
         }
     }
 
-    private func saveFlight() async {
-        isLoading = true
-        errorMessage = nil
+    private var canSave: Bool {
+        !aircraftRegistration.isEmpty &&
+        !aircraftType.isEmpty &&
+        locationManager.location != nil
+    }
 
-        do {
-            let info = try await withThrowingTaskGroup(of: JetAPIImage.self) { group in
-                group.addTask {
-                    try await JetAPIService.fetchAircraftInfo(
-                        registration: aircraftPrefix
-                    )
-                }
+    private func saveFlight() {
+        guard let location = locationManager.location else { return }
 
-                group.addTask {
-                    try await Task.sleep(nanoseconds: 5_000_000_000)
-                    throw URLError(.timedOut)
-                }
+        let flight = Flight(
+            aircraftRegistration: aircraftRegistration,
+            aircraftType: aircraftType,
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude
+        )
 
-                let result = try await group.next()!
-                group.cancelAll()
-                return result
-            }
-
-            let flight = Flight(
-                aircraftPrefix: aircraftPrefix,
-                airportICAO: selectedAirport.icao,
-                date: Date(),
-                aircraftModel: info.Aircraft,
-                airlineName: info.Airline,
-                imageURL: URL(string: info.Image),
-                needsRefresh: false
-            )
-
-            context.insert(flight)
-            dismiss()
-
-        } catch {
-            let flight = Flight(
-                aircraftPrefix: aircraftPrefix,
-                airportICAO: selectedAirport.icao,
-                date: Date(),
-                aircraftModel: "Unknown aircraft",
-                airlineName: "Unknown airline",
-                needsRefresh: true
-            )
-
-            context.insert(flight)
-            dismiss()
-        }
-
-        isLoading = false
+        context.insert(flight)
+        dismiss()
     }
 }

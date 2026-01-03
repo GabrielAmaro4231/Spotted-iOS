@@ -19,19 +19,25 @@ struct HomeView: View {
                     FlightDetailView(flight: flight)
                 } label: {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(flight.aircraftPrefix)
+
+                        Text(flight.aircraftRegistration)
                             .font(.headline)
 
-                        if let airport = flight.airport {
-                            Text("\(airport.iata) / \(airport.icao)")
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text("Unknown airport")
-                                .foregroundColor(.secondary)
-                        }
+                        Text(flight.aircraftType)
+                            .foregroundColor(.secondary)
+
+                        Text(
+                            String(
+                                format: "Lat %.4f, Lon %.4f",
+                                flight.latitude,
+                                flight.longitude
+                            )
+                        )
+                        .font(.caption)
+                        .foregroundColor(.secondary)
 
                         Text(flight.date, style: .date)
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                     }
                     .padding()

@@ -1,127 +1,78 @@
 import SwiftUI
-import SwiftData
 
 struct FlightDetailView: View {
     let flight: Flight
 
-    @Environment(\.modelContext)
-    private var context
+    // MARK: - Derived values (SwiftUI-safe)
 
-    @Environment(\.dismiss)
-    private var dismiss
+    private var city: String {
+        flight.city?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    }
 
-    @State private var showDeleteConfirmation = false
-    @State private var isRefreshing = false
-    @State private var refreshError: String?
-    @State private var rotation: Double = 0
+    private var country: String {
+        flight.country?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    }
+
+    private var mapTitle: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm MMM d yyyy"
+
+        return "Aircraft \(flight.aircraftRegistration) spotted from here at \(formatter.string(from: flight.date))"
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
 
-                if let imageURL = flight.imageURL {
-                    AsyncImage(url: imageURL) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .cornerRadius(12)
-                    } placeholder: {
-                        ProgressView()
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(flight.aircraftRegistration)
+                        .font(.title2)
+                        .bold()
+
+                    Text(flight.aircraftType)
+                        .foregroundStyle(.secondary)
+
+                    Divider()
+
+                    if !city.isEmpty || !country.isEmpty {
+                        Label(
+                            [city, country]
+                                .filter { !$0.isEmpty }
+                                .joined(separator: ", "),
+                            systemImage: "location.fill"
+                        )
+                        .font(.subheadline)
+                    } else {
+                        Label(
+                            String(
+                                format: "Lat %.5f, Lon %.5f",
+                                flight.latitude,
+                                flight.longitude
+                            ),
+                            systemImage: "location.fill"
+                        )
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                     }
-                }
 
-                Text(flight.aircraftPrefix)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                    Text(flight.date.formatted())
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
 
-                DetailRow(title: "Aircraft", value: flight.aircraftModel)
-                DetailRow(title: "Airline", value: flight.airlineName)
+                    Divider()
 
-                if let airport = flight.airport {
-                    DetailRow(title: "Airport", value: airport.name)
-                    DetailRow(title: "Location", value: "\(airport.city), \(airport.country)")
-                    DetailRow(title: "Codes", value: "\(airport.iata) / \(airport.icao)")
-                } else {
-                    DetailRow(title: "Airport", value: "Unknown airport")
-                }
-
-                DetailRow(
-                    title: "Date",
-                    value: flight.date.formatted(
-                        date: .long,
-                        time: .shortened
+                    MiniMapView(
+                        latitude: flight.latitude,
+                        longitude: flight.longitude,
+                        title: mapTitle
                     )
-                )
-
-                if let refreshError {
-                    Text(refreshError)
-                        .foregroundColor(.red)
-                        .font(.caption)
                 }
-
-                Button(role: .destructive) {
-                    showDeleteConfirmation = true
-                } label: {
-                    Text("Delete Entry")
-                        .frame(maxWidth: .infinity)
-                }
-                .padding(.top)
-                .disabled(isRefreshing)
             }
             .padding()
         }
-        .navigationTitle("Spotting")
+        .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Delete Entry?", isPresented: $showDeleteConfirmation) {
-            Button("Delete", role: .destructive) {
-                context.delete(flight)
-                dismiss()
-            }
-            Button("Cancel", role: .cancel) { }
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                if flight.needsRefresh {
-                    Button {
-                        Task {
-                            await refreshFlight()
-                        }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .rotationEffect(.degrees(rotation))
-                            .animation(
-                                isRefreshing
-                                ? .linear(duration: 1).repeatForever(autoreverses: false)
-                                : .default,
-                                value: rotation
-                            )
-                    }
-                    .disabled(isRefreshing)
-                }
-            }
-        }
-    }
-
-    private func refreshFlight() async {
-        isRefreshing = true
-        refreshError = nil
-        rotation = 360
-
-        do {
-            let info = try await JetAPIService.fetchAircraftInfo(
-                registration: flight.aircraftPrefix
-            )
-
-            flight.aircraftModel = info.Aircraft
-            flight.airlineName = info.Airline
-            flight.imageURL = URL(string: info.Image)
-            flight.needsRefresh = false
-
-        } catch {
-            refreshError = "Request timed out. Please try again later."
-        }
-
-        isRefreshing = false
-        rotation = 0
     }
 }

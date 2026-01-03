@@ -2,39 +2,36 @@ import Foundation
 import SwiftData
 
 @Model
-class Flight {
-    var aircraftPrefix: String
-    var airportICAO: String
+final class Flight {
+    var id: UUID
+    var aircraftRegistration: String
+    var aircraftType: String
     var date: Date
 
-    var aircraftModel: String
-    var airlineName: String
-    var imageURL: URL?
+    // Location (core)
+    var latitude: Double
+    var longitude: Double
 
-    var needsRefresh: Bool
+    // Location (optional metadata, future use)
+    var city: String?
+    var country: String?
 
     init(
-        aircraftPrefix: String,
-        airportICAO: String,
-        date: Date,
-        aircraftModel: String,
-        airlineName: String,
-        imageURL: URL? = nil,
-        needsRefresh: Bool = false
+        aircraftRegistration: String,
+        aircraftType: String,
+        date: Date = .now,
+        latitude: Double,
+        longitude: Double,
+        city: String? = nil,
+        country: String? = nil
     ) {
-        self.aircraftPrefix = aircraftPrefix
-        self.airportICAO = airportICAO
+        self.id = UUID()
+        self.aircraftRegistration = aircraftRegistration
+        self.aircraftType = aircraftType
         self.date = date
-        self.aircraftModel = aircraftModel
-        self.airlineName = airlineName
-        self.imageURL = imageURL
-        self.needsRefresh = needsRefresh
-    }
-}
-
-extension Flight {
-    @Transient
-    var airport: Airport? {
-        airports.first { $0.icao == airportICAO }
+        self.latitude = latitude
+        self.longitude = longitude
+        self.city = city
+        self.country = country
     }
 }
