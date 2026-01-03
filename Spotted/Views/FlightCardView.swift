@@ -14,9 +14,15 @@ struct FlightCardView: View {
 
             Text(flight.airlineName)
 
-            Text("\(flight.airport.iata) / \(flight.airport.icao)")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            if let airport = flight.airport {
+                Text("\(airport.iata) / \(airport.icao)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            } else {
+                Text("Unknown airport")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
 
             Text(flight.date, style: .date)
                 .font(.caption2)

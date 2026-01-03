@@ -1,25 +1,34 @@
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     @Binding var isLoggedIn: Bool
-    @State private var flights: [Flight] = sampleFlights
+
+    @Query(sort: \Flight.date, order: .reverse)
+    private var flights: [Flight]
+
+    @Environment(\.modelContext)
+    private var context
+
     @State private var showAddFlight = false
 
     var body: some View {
         List {
             ForEach(flights) { flight in
                 NavigationLink {
-                    FlightDetailView(
-                        flight: flight,
-                        flights: $flights
-                    )
+                    FlightDetailView(flight: flight)
                 } label: {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(flight.aircraftPrefix)
                             .font(.headline)
 
-                        Text("\(flight.airport.iata) / \(flight.airport.icao)")
-                            .foregroundColor(.secondary)
+                        if let airport = flight.airport {
+                            Text("\(airport.iata) / \(airport.icao)")
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("Unknown airport")
+                                .foregroundColor(.secondary)
+                        }
 
                         Text(flight.date, style: .date)
                             .font(.caption)
@@ -30,18 +39,18 @@ struct HomeView: View {
                 }
                 .listRowInsets(.init())
             }
+            .onDelete(perform: deleteFlights)
         }
         .listStyle(.plain)
+        .navigationTitle("Spotting")
         .toolbar {
 
-            // Quit — left
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("Quit") {
                     isLoggedIn = false
                 }
             }
 
-            // Add — right
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showAddFlight = true
@@ -50,8 +59,16 @@ struct HomeView: View {
                 }
             }
         }
-        .navigationDestination(isPresented: $showAddFlight) {
-            AddFlightView(flights: $flights)
+        .sheet(isPresented: $showAddFlight) {
+            NavigationStack {
+                AddFlightView()
+            }
+        }
+    }
+
+    private func deleteFlights(at offsets: IndexSet) {
+        for index in offsets {
+            context.delete(flights[index])
         }
     }
 }

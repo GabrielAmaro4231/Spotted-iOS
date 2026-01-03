@@ -1,10 +1,14 @@
 import SwiftUI
+import SwiftData
 
 struct FlightDetailView: View {
     let flight: Flight
-    @Binding var flights: [Flight]
 
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext)
+    private var context
+
+    @Environment(\.dismiss)
+    private var dismiss
 
     @State private var showDeleteConfirmation = false
     @State private var isRefreshing = false
@@ -33,16 +37,13 @@ struct FlightDetailView: View {
                 DetailRow(title: "Aircraft", value: flight.aircraftModel)
                 DetailRow(title: "Airline", value: flight.airlineName)
 
-                DetailRow(title: "Airport", value: flight.airport.name)
-                DetailRow(
-                    title: "Location",
-                    value: "\(flight.airport.city), \(flight.airport.country)"
-                )
-
-                DetailRow(
-                    title: "Codes",
-                    value: "\(flight.airport.iata) / \(flight.airport.icao)"
-                )
+                if let airport = flight.airport {
+                    DetailRow(title: "Airport", value: airport.name)
+                    DetailRow(title: "Location", value: "\(airport.city), \(airport.country)")
+                    DetailRow(title: "Codes", value: "\(airport.iata) / \(airport.icao)")
+                } else {
+                    DetailRow(title: "Airport", value: "Unknown airport")
+                }
 
                 DetailRow(
                     title: "Date",
@@ -65,13 +66,19 @@ struct FlightDetailView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .padding(.top)
-                .disabled(isRefreshing) // 🚫 Disabled during refresh
+                .disabled(isRefreshing)
             }
             .padding()
         }
         .navigationTitle("Spotting")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(isRefreshing) // 🚫 Disable back button
+        .alert("Delete Entry?", isPresented: $showDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                context.delete(flight)
+                dismiss()
+            }
+            Button("Cancel", role: .cancel) { }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 if flight.needsRefresh {
@@ -93,55 +100,27 @@ struct FlightDetailView: View {
                 }
             }
         }
-        .alert("Delete Entry?", isPresented: $showDeleteConfirmation) {
-            Button("Delete", role: .destructive) {
-                flights.removeAll { $0.id == flight.id }
-                dismiss()
-            }
-            Button("Cancel", role: .cancel) { }
-        }
     }
 
-    // MARK: - Refresh Logic with Timeout
-
     private func refreshFlight() async {
-        guard let index = flights.firstIndex(where: { $0.id == flight.id }) else {
-            return
-        }
-
         isRefreshing = true
         refreshError = nil
-        rotation = 0
-        rotation = 360 // 🔄 start spinning
+        rotation = 360
 
         do {
-            let info = try await withThrowingTaskGroup(of: JetAPIImage.self) { group in
-                group.addTask {
-                    try await JetAPIService.fetchAircraftInfo(
-                        registration: flight.aircraftPrefix
-                    )
-                }
+            let info = try await JetAPIService.fetchAircraftInfo(
+                registration: flight.aircraftPrefix
+            )
 
-                group.addTask {
-                    try await Task.sleep(nanoseconds: 5_000_000_000)
-                    throw URLError(.timedOut)
-                }
-
-                let result = try await group.next()!
-                group.cancelAll()
-                return result
-            }
-
-            flights[index].aircraftModel = info.Aircraft
-            flights[index].airlineName = info.Airline
-            flights[index].imageURL = URL(string: info.Image)
-            flights[index].needsRefresh = false
+            flight.aircraftModel = info.Aircraft
+            flight.airlineName = info.Airline
+            flight.imageURL = URL(string: info.Image)
+            flight.needsRefresh = false
 
         } catch {
             refreshError = "Request timed out. Please try again later."
         }
 
-        // ✅ STOP animation cleanly
         isRefreshing = false
         rotation = 0
     }

@@ -1,8 +1,12 @@
 import SwiftUI
+import SwiftData
 
 struct AddFlightView: View {
-    @Binding var flights: [Flight]
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext)
+    private var context
+
+    @Environment(\.dismiss)
+    private var dismiss
 
     @State private var aircraftPrefix = ""
     @State private var selectedAirport: Airport = airports.first!
@@ -49,8 +53,6 @@ struct AddFlightView: View {
         }
     }
 
-    // MARK: - Save Logic with Timeout
-
     private func saveFlight() async {
         isLoading = true
         errorMessage = nil
@@ -73,9 +75,9 @@ struct AddFlightView: View {
                 return result
             }
 
-            let newFlight = Flight(
+            let flight = Flight(
                 aircraftPrefix: aircraftPrefix,
-                airport: selectedAirport,
+                airportICAO: selectedAirport.icao,
                 date: Date(),
                 aircraftModel: info.Aircraft,
                 airlineName: info.Airline,
@@ -83,23 +85,20 @@ struct AddFlightView: View {
                 needsRefresh: false
             )
 
-            flights.append(newFlight)
+            context.insert(flight)
             dismiss()
 
         } catch {
-            errorMessage = "Aircraft data unavailable. Saved for later refresh."
-
-            let fallbackFlight = Flight(
+            let flight = Flight(
                 aircraftPrefix: aircraftPrefix,
-                airport: selectedAirport,
+                airportICAO: selectedAirport.icao,
                 date: Date(),
                 aircraftModel: "Unknown aircraft",
                 airlineName: "Unknown airline",
-                imageURL: nil,
                 needsRefresh: true
             )
 
-            flights.append(fallbackFlight)
+            context.insert(flight)
             dismiss()
         }
 
