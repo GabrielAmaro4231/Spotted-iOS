@@ -28,14 +28,22 @@ struct HomeView: View {
                     cardView
                 }
             }
-            .navigationTitle("Flights")
+            .navigationTitle("Spotted")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Quit") {
-                        isLoggedIn = false
+
+                // View mode selector (top, primary control)
+                ToolbarItem(placement: .principal) {
+                    Picker("View mode", selection: $viewMode) {
+                        Image(systemName: "list.bullet")
+                            .tag(ViewMode.list)
+                        Image(systemName: "square.grid.2x2")
+                            .tag(ViewMode.cards)
                     }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 220)
                 }
 
+                // Add flight button
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showAddFlight = true
@@ -43,19 +51,6 @@ struct HomeView: View {
                         Image(systemName: "plus")
                     }
                 }
-            }
-            .safeAreaInset(edge: .bottom) {
-                Picker("View mode", selection: $viewMode) {
-                    Label("List", systemImage: "list.bullet")
-                        .tag(ViewMode.list)
-                    Label("Cards", systemImage: "square.grid.2x2")
-                        .tag(ViewMode.cards)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .padding(.top, 8)
-                .padding(.bottom, 12)
-                .background(.bar)
             }
             .sheet(isPresented: $showAddFlight) {
                 NavigationStack {
@@ -147,7 +142,7 @@ struct HomeView: View {
             : "Aircraft type unknown"
 
         return Text(displayText)
-            .foregroundColor(.secondary) // ✅ identical everywhere
+            .foregroundColor(.secondary)
     }
 
     // MARK: - Actions
