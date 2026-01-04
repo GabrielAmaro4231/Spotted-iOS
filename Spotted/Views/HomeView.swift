@@ -40,6 +40,7 @@ struct HomeView: View {
                     .pickerStyle(.segmented)
                     .frame(maxWidth: 220)
                 }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showAddFlight = true
@@ -56,6 +57,8 @@ struct HomeView: View {
         }
     }
 
+    // MARK: - List View
+
     private var listView: some View {
         List {
             ForEach(flights) { flight in
@@ -70,6 +73,23 @@ struct HomeView: View {
         }
         .listStyle(.plain)
     }
+
+    private func listRow(for flight: Flight) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(flight.aircraftRegistration)
+                .font(.headline)
+
+            aircraftTypeView(for: flight)
+
+            Text(flight.date, style: .date)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Card View
 
     private var cardView: some View {
         ScrollView {
@@ -86,25 +106,8 @@ struct HomeView: View {
         }
     }
 
-    private func listRow(for flight: Flight) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-
-            Text(flight.aircraftRegistration)
-                .font(.headline)
-
-            aircraftTypeView(for: flight)
-
-            Text(flight.date, style: .date)
-                .font(.caption2)
-                .foregroundColor(.secondary)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
     private func card(for flight: Flight) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-
             Text(flight.aircraftRegistration)
                 .font(.subheadline)
                 .fontWeight(.semibold)
@@ -121,17 +124,23 @@ struct HomeView: View {
         .shadow(radius: 2, y: 1)
     }
 
+    // MARK: - Aircraft Type
+
     private func aircraftTypeView(for flight: Flight) -> some View {
         let type = flight.aircraftType?
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        let displayText = (type?.isEmpty == false)
-            ? type!
-            : "Aircraft type unknown"
-
-        return Text(displayText)
-            .foregroundColor(.secondary)
+        return Group {
+            if let type, !type.isEmpty {
+                Text(type)
+            } else {
+                Text("Aircraft type unknown")
+            }
+        }
+        .foregroundColor(.secondary)
     }
+
+    // MARK: - Deletion
 
     private func deleteFlights(at offsets: IndexSet) {
         for index in offsets {
@@ -139,6 +148,8 @@ struct HomeView: View {
         }
     }
 }
+
+// MARK: - View Mode
 
 enum ViewMode {
     case list
