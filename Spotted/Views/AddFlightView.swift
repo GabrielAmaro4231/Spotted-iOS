@@ -7,7 +7,6 @@ struct AddFlightView: View {
     @Environment(\.dismiss) private var dismiss
 
     @StateObject private var locationManager = LocationManager()
-
     @State private var aircraftRegistration = ""
 
     var body: some View {
@@ -34,33 +33,54 @@ struct AddFlightView: View {
     }
 
     private func saveFlight() {
-        guard let location = locationManager.location else { return }
+        NSLog("saveFlight() called")
+
+        guard let location = locationManager.location else {
+            NSLog("No location available")
+            return
+        }
+
+        let normalizedReg = aircraftRegistration
+            .uppercased()
+            .replacingOccurrences(of: " ", with: "")
 
         let flight = Flight(
-            aircraftRegistration: aircraftRegistration,
+            aircraftRegistration: normalizedReg,
             latitude: location.coordinate.latitude,
             longitude: location.coordinate.longitude
         )
 
         context.insert(flight)
-        dismiss()
+        try? context.save()
 
-        Task.detached(priority: .background) {
+        NSLog("Inserted flight, starting enrichment")
+
+        Task {
             await enrichFlightIfPossible(flight)
         }
+
+        dismiss()
     }
 
     @MainActor
     private func enrichFlightIfPossible(_ flight: Flight) async {
         do {
+            NSLog("Starting enrichment for %@", flight.aircraftRegistration)
+
             let info = try await JetAPIService.shared.fetchAircraftInfo(
                 registration: flight.aircraftRegistration
             )
 
+            NSLog("JetAPI returned successfully")
+
             flight.aircraftType = info.model
             flight.imageURL = info.imageURL
 
+            try context.save()
+            NSLog("Flight updated and saved")
+
         } catch {
+            NSLog("JetAPI failed: %@", String(describing: error))
         }
     }
 }
