@@ -44,7 +44,6 @@ struct HomeView: View {
                     }
                 }
             }
-            // ✅ FIX: Stable bottom selector
             .safeAreaInset(edge: .bottom) {
                 Picker("View mode", selection: $viewMode) {
                     Label("List", systemImage: "list.bullet")
@@ -129,7 +128,6 @@ struct HomeView: View {
                 .font(.caption)
 
             Spacer(minLength: 4)
-
         }
         .padding(12)
         .frame(maxWidth: .infinity, minHeight: 110, alignment: .leading)
@@ -138,30 +136,18 @@ struct HomeView: View {
         .shadow(radius: 2, y: 1)
     }
 
+    // MARK: - Aircraft type (single consistent style)
+
     private func aircraftTypeView(for flight: Flight) -> some View {
         let type = flight.aircraftType?
-            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        return Group {
-            if !type.isEmpty {
-                Text(type)
-                    .foregroundColor(.secondary)
-            } else {
-                Text("Aircraft type unknown")
-                    .foregroundStyle(.tertiary)
-            }
-        }
-    }
+        let displayText = (type?.isEmpty == false)
+            ? type!
+            : "Aircraft type unknown"
 
-    private func coordinateView(for flight: Flight) -> some View {
-        Text(
-            String(
-                format: "Lat %.4f, Lon %.4f",
-                flight.latitude,
-                flight.longitude
-            )
-        )
-        .foregroundColor(.secondary)
+        return Text(displayText)
+            .foregroundColor(.secondary) // ✅ identical everywhere
     }
 
     // MARK: - Actions
