@@ -49,7 +49,6 @@ final class JetAPIService {
         ]
 
         let url = components.url!
-        NSLog("JetAPI URL: %@", url.absoluteString)
 
         var request = URLRequest(url: url)
         request.timeoutInterval = 5

@@ -57,8 +57,6 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - List View
-
     private var listView: some View {
         List {
             ForEach(flights) { flight in
@@ -88,8 +86,6 @@ struct HomeView: View {
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-
-    // MARK: - Card View
 
     private var cardView: some View {
         ScrollView {
@@ -124,8 +120,6 @@ struct HomeView: View {
         .shadow(radius: 2, y: 1)
     }
 
-    // MARK: - Aircraft Type
-
     private func aircraftTypeView(for flight: Flight) -> some View {
         let type = flight.aircraftType?
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -140,16 +134,12 @@ struct HomeView: View {
         .foregroundColor(.secondary)
     }
 
-    // MARK: - Deletion
-
     private func deleteFlights(at offsets: IndexSet) {
         for index in offsets {
             context.delete(flights[index])
         }
     }
 }
-
-// MARK: - View Mode
 
 enum ViewMode {
     case list
