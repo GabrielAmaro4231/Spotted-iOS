@@ -3,6 +3,7 @@ import SwiftData
 
 struct FlightDetailView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
 
     let flight: Flight
 
@@ -11,6 +12,8 @@ struct FlightDetailView: View {
     @State private var isEditing = false
     @State private var editedAircraftType = ""
     @State private var editedImageURL = ""
+
+    @State private var showDeleteConfirmation = false
 
     // MARK: - Derived values
 
@@ -43,36 +46,32 @@ struct FlightDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
 
+                // MARK: - Registration
+
+                Text(flight.aircraftRegistration)
+                    .font(.title2)
+                    .bold()
+
+                // MARK: - Image section
+
                 if isEditing {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("JetPhotos image URL")
                             .font(.caption)
                             .foregroundStyle(.secondary)
 
-                        TextField(
-                            "https://...",
-                            text: $editedImageURL
-                        )
-                        .textFieldStyle(.roundedBorder)
-                        .keyboardType(.URL)
-                        .textInputAutocapitalization(.never)
+                        TextField("https://...", text: $editedImageURL)
+                            .textFieldStyle(.roundedBorder)
+                            .keyboardType(.URL)
+                            .textInputAutocapitalization(.never)
                     }
-                } else if let url = URL(string: imageURL), !imageURL.isEmpty {
-                    AsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                    } placeholder: {
-                        ProgressView()
-                    }
+                } else if !imageURL.isEmpty {
+                    CachedFlightImageView(flight: flight)
                 }
 
                 Divider()
 
-                Text(flight.aircraftRegistration)
-                    .font(.title2)
-                    .bold()
+                // MARK: - Aircraft type
 
                 if isEditing {
                     VStack(alignment: .leading, spacing: 6) {
@@ -91,38 +90,66 @@ struct FlightDetailView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Divider()
+                // MARK: - Viewing-only content
 
-                Label(
-                    coordinateLabel,
-                    systemImage: "location.fill"
-                )
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                if !isEditing {
 
-                Text(flight.date.formatted())
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    Text(flight.date.formatted())
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
 
-                Divider()
+                    Divider()
 
-                MiniMapView(
-                    latitude: flight.latitude,
-                    longitude: flight.longitude,
-                    title: mapTitle
-                )
+                    MiniMapView(
+                        latitude: flight.latitude,
+                        longitude: flight.longitude,
+                        title: mapTitle
+                    )
+
+                    Label(coordinateLabel, systemImage: "location.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                // MARK: - Delete (edit mode only)
+
+                if isEditing {
+                    Divider()
+
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Text("Delete Flight")
+                                .fontWeight(.semibold)
+                            Spacer()
+                        }
+                    }
+                    .padding()
+                    .background(Color.red.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
             }
             .padding()
         }
         .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(isEditing)   // ✅ THIS IS THE KEY LINE
+        .navigationBarBackButtonHidden(isEditing)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(isEditing ? "Done" : "Edit") {
                     toggleEdit()
                 }
             }
+        }
+        .alert("Delete Flight?", isPresented: $showDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                deleteFlight()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This action cannot be undone.")
         }
         .onAppear {
             editedAircraftType = aircraftType
@@ -150,5 +177,11 @@ struct FlightDetailView: View {
         flight.imageURL = image.isEmpty ? nil : image
 
         try? context.save()
+    }
+
+    private func deleteFlight() {
+        context.delete(flight)
+        try? context.save()
+        dismiss()
     }
 }
