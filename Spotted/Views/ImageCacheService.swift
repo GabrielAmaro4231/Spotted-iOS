@@ -14,7 +14,6 @@ final class ImageCacheService {
     }
 
     func loadImage(for flight: Flight) async -> UIImage? {
-        // 1️⃣ Load from disk if exists
         if let path = flight.localImagePath {
             let url = URL(fileURLWithPath: path)
             if let data = try? Data(contentsOf: url),
@@ -23,7 +22,6 @@ final class ImageCacheService {
             }
         }
 
-        // 2️⃣ Download if missing
         guard let urlString = flight.imageURL,
               let url = URL(string: urlString) else {
             return nil

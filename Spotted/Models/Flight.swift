@@ -5,8 +5,8 @@ import SwiftData
 final class Flight {
     var id: UUID
     var aircraftRegistration: String
-    var aircraftType: String?          // ← now optional
-    var imageURL: String?              // ← JetPhotos
+    var aircraftType: String?
+    var imageURL: String?
     var localImagePath: String?
     var latitude: Double
     var longitude: Double

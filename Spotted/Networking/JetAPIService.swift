@@ -1,13 +1,9 @@
 import Foundation
 
-// MARK: - Public model used by the app
-
 struct JetAircraftInfo {
     let model: String
     let imageURL: String
 }
-
-// MARK: - Internal API response models
 
 private struct JetAPIResponse: Decodable {
     let Reg: String
@@ -19,8 +15,6 @@ private struct JetAPIImage: Decodable {
     let Aircraft: String
     let Airline: String
 }
-
-// MARK: - Service
 
 enum JetAPIError: Error {
     case timeout
@@ -44,7 +38,7 @@ final class JetAPIService {
         }
 
         var request = URLRequest(url: url)
-        request.timeoutInterval = 5   // ⏱ hard limit
+        request.timeoutInterval = 5
 
         let (data, _) = try await URLSession.shared.data(for: request)
 

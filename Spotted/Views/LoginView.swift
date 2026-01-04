@@ -5,7 +5,6 @@ struct LoginView: View {
 
     var body: some View {
         ZStack {
-            // Background
             LinearGradient(
                 colors: [
                     Color(.systemBackground),
@@ -18,8 +17,6 @@ struct LoginView: View {
 
             VStack(spacing: 32) {
                 Spacer()
-
-                // Aviation symbol
                 Image(systemName: "airplane")
                     .font(.system(size: 52, weight: .light))
                     .foregroundStyle(.secondary)

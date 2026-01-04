@@ -28,14 +28,10 @@ struct AddFlightView: View {
         }
     }
 
-    // MARK: - Validation
-
     private var canSave: Bool {
         !aircraftRegistration.isEmpty &&
         locationManager.location != nil
     }
-
-    // MARK: - Save & background enrichment
 
     private func saveFlight() {
         guard let location = locationManager.location else { return }
@@ -65,8 +61,6 @@ struct AddFlightView: View {
             flight.imageURL = info.imageURL
 
         } catch {
-            // API offline / timeout → silently ignore
-            // User can edit manually later
         }
     }
 }

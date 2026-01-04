@@ -7,15 +7,11 @@ struct FlightDetailView: View {
 
     let flight: Flight
 
-    // MARK: - Edit state
-
     @State private var isEditing = false
     @State private var editedAircraftType = ""
     @State private var editedImageURL = ""
 
     @State private var showDeleteConfirmation = false
-
-    // MARK: - Derived values
 
     private var aircraftType: String {
         flight.aircraftType?
@@ -46,13 +42,9 @@ struct FlightDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
 
-                // MARK: - Registration
-
                 Text(flight.aircraftRegistration)
                     .font(.title2)
                     .bold()
-
-                // MARK: - Image section
 
                 if isEditing {
                     VStack(alignment: .leading, spacing: 6) {
@@ -71,8 +63,6 @@ struct FlightDetailView: View {
 
                 Divider()
 
-                // MARK: - Aircraft type
-
                 if isEditing {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Aircraft type")
@@ -89,8 +79,6 @@ struct FlightDetailView: View {
                     Text(aircraftType)
                         .foregroundStyle(.secondary)
                 }
-
-                // MARK: - Viewing-only content
 
                 if !isEditing {
 
@@ -110,8 +98,6 @@ struct FlightDetailView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-
-                // MARK: - Delete (edit mode only)
 
                 if isEditing {
                     Divider()
@@ -156,8 +142,6 @@ struct FlightDetailView: View {
             editedImageURL = imageURL
         }
     }
-
-    // MARK: - Actions
 
     private func toggleEdit() {
         if isEditing {

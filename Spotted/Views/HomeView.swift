@@ -30,8 +30,6 @@ struct HomeView: View {
             }
             .navigationTitle("Spotted")
             .toolbar {
-
-                // View mode selector (top, primary control)
                 ToolbarItem(placement: .principal) {
                     Picker("View mode", selection: $viewMode) {
                         Image(systemName: "list.bullet")
@@ -42,8 +40,6 @@ struct HomeView: View {
                     .pickerStyle(.segmented)
                     .frame(maxWidth: 220)
                 }
-
-                // Add flight button
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showAddFlight = true
@@ -60,8 +56,6 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - List view
-
     private var listView: some View {
         List {
             ForEach(flights) { flight in
@@ -77,8 +71,6 @@ struct HomeView: View {
         .listStyle(.plain)
     }
 
-    // MARK: - Card view
-
     private var cardView: some View {
         ScrollView {
             LazyVGrid(columns: gridColumns, spacing: 16) {
@@ -93,8 +85,6 @@ struct HomeView: View {
             .padding()
         }
     }
-
-    // MARK: - Row / Card components
 
     private func listRow(for flight: Flight) -> some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -131,8 +121,6 @@ struct HomeView: View {
         .shadow(radius: 2, y: 1)
     }
 
-    // MARK: - Aircraft type (single consistent style)
-
     private func aircraftTypeView(for flight: Flight) -> some View {
         let type = flight.aircraftType?
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -145,16 +133,12 @@ struct HomeView: View {
             .foregroundColor(.secondary)
     }
 
-    // MARK: - Actions
-
     private func deleteFlights(at offsets: IndexSet) {
         for index in offsets {
             context.delete(flights[index])
         }
     }
 }
-
-// MARK: - View mode enum
 
 enum ViewMode {
     case list
