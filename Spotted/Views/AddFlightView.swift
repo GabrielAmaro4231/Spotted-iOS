@@ -17,28 +17,6 @@ struct AddFlightView: View {
                     .textInputAutocapitalization(.characters)
             }
 
-            Section("Location") {
-                if locationManager.isLoading {
-                    ProgressView("Getting location…")
-                } else if let error = locationManager.errorMessage {
-                    Text(error)
-                        .foregroundStyle(.red)
-                } else if let location = locationManager.location {
-                    Text(
-                        String(
-                            format: "Lat %.4f, Lon %.4f",
-                            location.coordinate.latitude,
-                            location.coordinate.longitude
-                        )
-                    )
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                } else {
-                    Text("Location not available")
-                        .foregroundStyle(.secondary)
-                }
-            }
-
             Button("Save") {
                 saveFlight()
             }

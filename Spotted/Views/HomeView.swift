@@ -11,78 +11,171 @@ struct HomeView: View {
     private var context
 
     @State private var showAddFlight = false
+    @State private var viewMode: ViewMode = .list
+
+    private let gridColumns = [
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
 
     var body: some View {
+        NavigationStack {
+            Group {
+                switch viewMode {
+                case .list:
+                    listView
+                case .cards:
+                    cardView
+                }
+            }
+            .navigationTitle("Flights")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Quit") {
+                        isLoggedIn = false
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showAddFlight = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+            // ✅ FIX: Stable bottom selector
+            .safeAreaInset(edge: .bottom) {
+                Picker("View mode", selection: $viewMode) {
+                    Label("List", systemImage: "list.bullet")
+                        .tag(ViewMode.list)
+                    Label("Cards", systemImage: "square.grid.2x2")
+                        .tag(ViewMode.cards)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+                .background(.bar)
+            }
+            .sheet(isPresented: $showAddFlight) {
+                NavigationStack {
+                    AddFlightView()
+                }
+            }
+        }
+    }
+
+    // MARK: - List view
+
+    private var listView: some View {
         List {
             ForEach(flights) { flight in
                 NavigationLink {
                     FlightDetailView(flight: flight)
                 } label: {
-                    VStack(alignment: .leading, spacing: 6) {
-
-                        Text(flight.aircraftRegistration)
-                            .font(.headline)
-
-                        let aircraftType = flight.aircraftType?
-                            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-
-                        if !aircraftType.isEmpty {
-                            Text(aircraftType)
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text("Aircraft type unknown")
-                                .foregroundStyle(.tertiary)
-                        }
-
-                        Text(
-                            String(
-                                format: "Lat %.4f, Lon %.4f",
-                                flight.latitude,
-                                flight.longitude
-                            )
-                        )
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                        Text(flight.date, style: .date)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    listRow(for: flight)
                 }
                 .listRowInsets(.init())
             }
             .onDelete(perform: deleteFlights)
         }
         .listStyle(.plain)
-        .navigationTitle("Spotting")
-        .toolbar {
+    }
 
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("Quit") {
-                    isLoggedIn = false
+    // MARK: - Card view
+
+    private var cardView: some View {
+        ScrollView {
+            LazyVGrid(columns: gridColumns, spacing: 16) {
+                ForEach(flights) { flight in
+                    NavigationLink {
+                        FlightDetailView(flight: flight)
+                    } label: {
+                        card(for: flight)
+                    }
                 }
             }
-
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showAddFlight = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-            }
+            .padding()
         }
-        .sheet(isPresented: $showAddFlight) {
-            NavigationStack {
-                AddFlightView()
+    }
+
+    // MARK: - Row / Card components
+
+    private func listRow(for flight: Flight) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+
+            Text(flight.aircraftRegistration)
+                .font(.headline)
+
+            aircraftTypeView(for: flight)
+
+            Text(flight.date, style: .date)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func card(for flight: Flight) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+
+            Text(flight.aircraftRegistration)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+
+            aircraftTypeView(for: flight)
+                .font(.caption)
+
+            Spacer(minLength: 4)
+
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, minHeight: 110, alignment: .leading)
+        .background(.background)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(radius: 2, y: 1)
+    }
+
+    private func aircraftTypeView(for flight: Flight) -> some View {
+        let type = flight.aircraftType?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        return Group {
+            if !type.isEmpty {
+                Text(type)
+                    .foregroundColor(.secondary)
+            } else {
+                Text("Aircraft type unknown")
+                    .foregroundStyle(.tertiary)
             }
         }
     }
+
+    private func coordinateView(for flight: Flight) -> some View {
+        Text(
+            String(
+                format: "Lat %.4f, Lon %.4f",
+                flight.latitude,
+                flight.longitude
+            )
+        )
+        .foregroundColor(.secondary)
+    }
+
+    // MARK: - Actions
 
     private func deleteFlights(at offsets: IndexSet) {
         for index in offsets {
             context.delete(flights[index])
         }
     }
+}
+
+// MARK: - View mode enum
+
+enum ViewMode {
+    case list
+    case cards
 }
