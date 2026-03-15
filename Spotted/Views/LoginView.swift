@@ -1,10 +1,14 @@
 import SwiftUI
 
 struct LoginView: View {
-    @Binding var isLoggedIn: Bool
+
+    @ObservedObject var viewModel: LoginViewModel
+    let onLogin: () -> Void
 
     var body: some View {
+
         ZStack {
+
             LinearGradient(
                 colors: [
                     Color(.systemBackground),
@@ -16,12 +20,15 @@ struct LoginView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 32) {
+
                 Spacer()
+
                 Image(systemName: "airplane")
                     .font(.system(size: 52, weight: .light))
                     .foregroundStyle(.secondary)
 
                 VStack(spacing: 10) {
+
                     Text("Spotted")
                         .font(.largeTitle)
                         .fontWeight(.bold)
@@ -33,8 +40,13 @@ struct LoginView: View {
                 }
 
                 Button {
-                    isLoggedIn = true
+
+                    if viewModel.login() {
+                        onLogin()
+                    }
+
                 } label: {
+
                     Text("Start Spotting")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
@@ -42,10 +54,12 @@ struct LoginView: View {
                         .background(Color.accentColor)
                         .foregroundColor(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
+
                 }
                 .padding(.horizontal)
 
                 Spacer()
+
             }
             .padding()
         }

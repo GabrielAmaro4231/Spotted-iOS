@@ -1,33 +1,52 @@
 import SwiftUI
 
 struct CachedFlightImageView: View {
+
     let flight: Flight
+    let imageService: ImageCacheServiceProtocol
 
     @State private var image: UIImage?
-    @State private var isLoading = false
+    @State private var loading = false
 
     var body: some View {
+
         Group {
+
             if let image {
+
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-            } else if isLoading {
+
+            } else if loading {
+
                 ProgressView()
+
             } else {
+
                 Color.clear
+
             }
+
         }
         .task {
-            await load()
-        }
-    }
 
-    private func load() async {
-        guard image == nil else { return }
-        isLoading = true
-        image = await ImageCacheService.shared.loadImage(for: flight)
-        isLoading = false
+            loading = true
+
+            let result = await imageService.loadImage(
+                imageURL: flight.imageURL,
+                localPath: flight.localImagePath,
+                id: flight.id
+            )
+
+            image = result.0
+
+            if let newPath = result.1 {
+                flight.localImagePath = newPath
+            }
+
+            loading = false
+
+        }
     }
 }

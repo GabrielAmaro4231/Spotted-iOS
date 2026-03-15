@@ -1,11 +1,14 @@
 import Foundation
 
 struct JetAircraftInfo {
+
     let model: String
     let imageURL: String
+
 }
 
 private struct JetAPIResponse: Decodable {
+
     let reg: String
     let images: [JetAPIImage]
 
@@ -16,31 +19,29 @@ private struct JetAPIResponse: Decodable {
 }
 
 private struct JetAPIImage: Decodable {
+
     let image: String
     let aircraft: String
-    let airline: String
 
     enum CodingKeys: String, CodingKey {
         case image = "Image"
         case aircraft = "Aircraft"
-        case airline = "Airline"
     }
 }
 
 enum JetAPIError: Error {
-    case timeout
+
     case invalidResponse
     case noImages
+
 }
 
-final class JetAPIService {
-
-    static let shared = JetAPIService()
-    private init() {}
+final class JetAPIService: AircraftServiceProtocol {
 
     func fetchAircraftInfo(registration: String) async throws -> JetAircraftInfo {
 
         var components = URLComponents(string: "https://www.jetapi.dev/api")!
+
         components.queryItems = [
             .init(name: "reg", value: registration),
             .init(name: "photos", value: "1"),
@@ -50,12 +51,10 @@ final class JetAPIService {
 
         let url = components.url!
 
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 5
+        let (data, response) = try await URLSession.shared.data(from: url)
 
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+        guard let http = response as? HTTPURLResponse,
+              http.statusCode == 200 else {
             throw JetAPIError.invalidResponse
         }
 

@@ -1,44 +1,34 @@
 import SwiftUI
 
 struct FlightCardView: View {
+
     let flight: Flight
 
-    private var aircraftType: String {
-        flight.aircraftType?
-            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-    }
-
     var body: some View {
+
         VStack(alignment: .leading, spacing: 6) {
 
             Text(flight.aircraftRegistration)
-                .font(.headline)
+                .font(.subheadline)
+                .fontWeight(.semibold)
 
-            if !aircraftType.isEmpty {
-                Text(aircraftType)
-                    .foregroundStyle(.secondary)
+            if let type = flight.aircraftType {
+                Text(type)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             } else {
                 Text("Aircraft type unknown")
-                    .foregroundStyle(.tertiary)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
 
-            Text(
-                String(
-                    format: "Lat %.4f, Lon %.4f",
-                    flight.latitude,
-                    flight.longitude
-                )
-            )
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            Spacer(minLength: 4)
 
-            Text(flight.date, style: .date)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemBackground))
-        .overlay(Divider(), alignment: .bottom)
+        .padding(12)
+        .frame(maxWidth: .infinity, minHeight: 110, alignment: .leading)
+        .background(.background)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(radius: 2, y: 1)
     }
 }

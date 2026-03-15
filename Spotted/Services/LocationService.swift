@@ -1,15 +1,9 @@
-import Foundation
 import CoreLocation
-import Combine
 
-@MainActor
-final class LocationManager: NSObject, ObservableObject {
+final class LocationService: NSObject, LocationServiceProtocol {
 
     private let manager = CLLocationManager()
-
-    @Published var location: CLLocation?
-    @Published var isLoading = false
-    @Published var errorMessage: String?
+    private var completion: ((CLLocation?) -> Void)?
 
     override init() {
         super.init()
@@ -17,24 +11,21 @@ final class LocationManager: NSObject, ObservableObject {
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
     }
 
-    func requestLocation() {
-        isLoading = true
-        errorMessage = nil
+    func requestLocation(completion: @escaping (CLLocation?) -> Void) {
 
+        self.completion = completion
         manager.requestWhenInUseAuthorization()
         manager.requestLocation()
     }
 }
 
-extension LocationManager: CLLocationManagerDelegate {
+extension LocationService: CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        isLoading = false
-        self.location = locations.first
+        completion?(locations.first)
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        isLoading = false
-        errorMessage = error.localizedDescription
+        completion?(nil)
     }
 }

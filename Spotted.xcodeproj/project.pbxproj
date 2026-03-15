@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		EE7003512F6742120094F751 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = EE50463B2EFDCA11006747F2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EE5046422EFDCA11006747F2;
+			remoteInfo = Spotted;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		EE5046432EFDCA11006747F2 /* Spotted.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spotted.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE70034D2F6742120094F751 /* SpottedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpottedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -20,6 +31,13 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		EE5046402EFDCA11006747F2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EE70034A2F6742120094F751 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -41,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				EE5046432EFDCA11006747F2 /* Spotted.app */,
+				EE70034D2F6742120094F751 /* SpottedTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +89,26 @@
 			productReference = EE5046432EFDCA11006747F2 /* Spotted.app */;
 			productType = "com.apple.product-type.application";
 		};
+		EE70034C2F6742120094F751 /* SpottedTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EE7003532F6742120094F751 /* Build configuration list for PBXNativeTarget "SpottedTests" */;
+			buildPhases = (
+				EE7003492F6742120094F751 /* Sources */,
+				EE70034A2F6742120094F751 /* Frameworks */,
+				EE70034B2F6742120094F751 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EE7003522F6742120094F751 /* PBXTargetDependency */,
+			);
+			name = SpottedTests;
+			packageProductDependencies = (
+			);
+			productName = SpottedTests;
+			productReference = EE70034D2F6742120094F751 /* SpottedTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -77,11 +116,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2610;
+				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					EE5046422EFDCA11006747F2 = {
 						CreatedOnToolsVersion = 26.1;
+					};
+					EE70034C2F6742120094F751 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = EE5046422EFDCA11006747F2;
 					};
 				};
 			};
@@ -101,12 +144,20 @@
 			projectRoot = "";
 			targets = (
 				EE5046422EFDCA11006747F2 /* Spotted */,
+				EE70034C2F6742120094F751 /* SpottedTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		EE5046412EFDCA11006747F2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EE70034B2F6742120094F751 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -123,7 +174,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EE7003492F6742120094F751 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		EE7003522F6742120094F751 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EE5046422EFDCA11006747F2 /* Spotted */;
+			targetProxy = EE7003512F6742120094F751 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		EE50464C2EFDCA13006747F2 /* Debug */ = {
@@ -311,6 +377,48 @@
 			};
 			name = Release;
 		};
+		EE7003542F6742120094F751 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pucpr.SpottedTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Spotted.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Spotted";
+			};
+			name = Debug;
+		};
+		EE7003552F6742120094F751 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pucpr.SpottedTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Spotted.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Spotted";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -328,6 +436,15 @@
 			buildConfigurations = (
 				EE50464F2EFDCA13006747F2 /* Debug */,
 				EE5046502EFDCA13006747F2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EE7003532F6742120094F751 /* Build configuration list for PBXNativeTarget "SpottedTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EE7003542F6742120094F751 /* Debug */,
+				EE7003552F6742120094F751 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
