@@ -30,11 +30,11 @@ final class AddFlightViewModel: ObservableObject {
         }
     }
 
-    func normalize(_ reg: String) -> String {
-
-        reg
-            .uppercased()
+    func normalize(_ registration: String) -> String {
+        registration
+            .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: " ", with: "")
+            .uppercased()
     }
 
     func saveFlight() async throws {
