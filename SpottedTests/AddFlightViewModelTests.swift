@@ -20,7 +20,7 @@ final class AddFlightViewModelTests: XCTestCase {
         )
     }
 
-    // MARK: - Normalize Tests
+    // Normalize Tests
 
     func testNormalizeRemovesSpacesAndUppercases() {
 
@@ -36,7 +36,7 @@ final class AddFlightViewModelTests: XCTestCase {
         XCTAssertEqual(result, "PTXYZ")
     }
 
-    // MARK: - Location Test
+    // Location Test
 
     func testRequestLocationUpdatesLocation() {
 
@@ -55,7 +55,7 @@ final class AddFlightViewModelTests: XCTestCase {
         XCTAssertNotNil(vm.location)
     }
 
-    // MARK: - Save Flight Test
+    // Save Flight Test
 
     func testSaveFlightCreatesFlight() async throws {
 
@@ -68,7 +68,7 @@ final class AddFlightViewModelTests: XCTestCase {
         XCTAssertEqual(repository.savedFlights.count, 1)
     }
 
-    // MARK: - Aircraft Service Test
+    // Aircraft Service Test
 
     func testAircraftServiceReturnsExpectedModel() async throws {
 
@@ -80,7 +80,7 @@ final class AddFlightViewModelTests: XCTestCase {
     }
 }
 
-// MARK: - Mock Repository
+// Mock Repository
 
 final class MockFlightRepository: FlightRepositoryProtocol {
 
@@ -95,7 +95,7 @@ final class MockFlightRepository: FlightRepositoryProtocol {
     func saveContext() throws { }
 }
 
-// MARK: - Mock Aircraft Service
+// Mock Aircraft Service
 
 final class MockAircraftService: AircraftServiceProtocol {
 
@@ -108,7 +108,7 @@ final class MockAircraftService: AircraftServiceProtocol {
     }
 }
 
-// MARK: - Mock Location Service
+// Mock Location Service
 
 final class MockLocationService: LocationServiceProtocol {
 
