@@ -53,6 +53,7 @@ O modelo principal é a entidade Flight, que representa um registro de aeronave:
 ```swift
 @Model
 final class Flight {
+
     var id: UUID
     var aircraftRegistration: String
     var aircraftType: String?
@@ -68,6 +69,7 @@ As telas (Views) são responsáveis apenas pela interface. Por exemplo, a HomeVi
 
 ```swift
 struct HomeView: View {
+
     @ObservedObject var viewModel: HomeViewModel
 }
 ```
@@ -101,13 +103,13 @@ Um exemplo claro disso está no AddFlightViewModel:
 
 ```swift
 init(
-    repository: FlightRepositoryProtocol,
-    aircraftService: AircraftServiceProtocol,
-    locationService: LocationServiceProtocol
+   repository: FlightRepositoryProtocol,
+   aircraftService: AircraftServiceProtocol,
+   locationService: LocationServiceProtocol
 )
 ```
 
-Isso permite que o ViewModel não dependa de implementações concretas, apenas de contratos (protocolos).
+Isso permite que o ViewModel dependa apenas de protocolos.
 
 As implementações reais são centralizadas no AppContainer:
 
@@ -120,9 +122,11 @@ final class AppContainer {
     let flightRepository: FlightRepositoryProtocol
 
     init(context: ModelContext) {
+
         aircraftService = JetAPIService()
         imageCacheService = ImageCacheService()
         locationService = LocationService()
+
         flightRepository = SwiftDataFlightRepository(context: context)
     }
 }
@@ -138,10 +142,13 @@ O acesso aos dados é feito através de um repositório, que abstrai a forma com
 
 ```swift
 protocol FlightRepositoryProtocol {
+
     func save(_ flight: Flight) throws
     func delete(_ flight: Flight) throws
     func saveContext() throws
+
 }
+
 ```
 
 A implementação utiliza SwiftData:
@@ -150,6 +157,10 @@ A implementação utiliza SwiftData:
 final class SwiftDataFlightRepository: FlightRepositoryProtocol {
 
     private let context: ModelContext
+
+    init(context: ModelContext) {
+        self.context = context
+    }
 
     func save(_ flight: Flight) throws {
         context.insert(flight)
@@ -172,12 +183,34 @@ Por exemplo, a busca de informações da aeronave:
 final class JetAPIService: AircraftServiceProtocol {
 
     func fetchAircraftInfo(registration: String) async throws -> JetAircraftInfo {
-        let (data, _) = try await URLSession.shared.data(from: url)
+
+        var components = URLComponents(string: "https://www.jetapi.dev/api")!
+
+        components.queryItems = [
+            .init(name: "reg", value: registration),
+            .init(name: "photos", value: "1"),
+            .init(name: "flights", value: "0"),
+            .init(name: "only_jp", value: "true")
+        ]
+
+        let url = components.url!
+
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        guard let http = response as? HTTPURLResponse,
+              http.statusCode == 200 else {
+            throw JetAPIError.invalidResponse
+        }
+
         let decoded = try JSONDecoder().decode(JetAPIResponse.self, from: data)
 
+        guard let firstImage = decoded.images.first else {
+            throw JetAPIError.noImages
+        }
+
         return JetAircraftInfo(
-            model: decoded.images.first!.aircraft,
-            imageURL: decoded.images.first!.image
+            model: firstImage.aircraft,
+            imageURL: firstImage.image
         )
     }
 }
@@ -186,20 +219,24 @@ final class JetAPIService: AircraftServiceProtocol {
 Outro exemplo é o serviço de localização:
 
 ```swift
-func requestLocation(completion: @escaping (CLLocation?) -> Void) {
-    manager.requestWhenInUseAuthorization()
-    manager.requestLocation()
+final class LocationService: NSObject, LocationServiceProtocol {
+
+    private let manager = CLLocationManager()
+    private var completion: ((CLLocation?) -> Void)?
+
+    override init() {
+        super.init()
+        manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    }
+
+    func requestLocation(completion: @escaping (CLLocation?) -> Void) {
+
+        self.completion = completion
+        manager.requestWhenInUseAuthorization()
+        manager.requestLocation()
+    }
 }
-```
-
-E também o cache de imagens:
-
-```swift
-func loadImage(
-    imageURL: String?,
-    localPath: String?,
-    id: UUID
-) async -> (UIImage?, String?)
 ```
 
 Cada serviço tem uma responsabilidade específica, evitando mistura de funções.
@@ -235,7 +272,9 @@ E o teste correspondente:
 
 ```swift
 func testNormalizeRemovesSpacesAndUppercases() {
+
     let result = vm.normalize(" pt abc ")
+
     XCTAssertEqual(result, "PTABC")
 }
 ```
@@ -245,12 +284,13 @@ Também é possível testar comportamentos mais completos, como salvar um voo:
 ```swift
 func testSaveFlightCreatesFlight() async throws {
 
-    vm.aircraftRegistration = "PTABC"
-    vm.location = CLLocation(latitude: 10, longitude: 20)
+        vm.aircraftRegistration = "PTABC"
 
-    try await vm.saveFlight()
+        vm.location = CLLocation(latitude: 10, longitude: 20)
 
-    XCTAssertEqual(repository.savedFlights.count, 1)
+        try await vm.saveFlight()
+
+        XCTAssertEqual(repository.savedFlights.count, 1)
 }
 ```
 
@@ -260,10 +300,21 @@ Para isso, são utilizadas implementações simuladas (mocks), como:
 final class MockAircraftService: AircraftServiceProtocol {
 
     func fetchAircraftInfo(registration: String) async throws -> JetAircraftInfo {
+
         return JetAircraftInfo(
             model: "A320",
             imageURL: "https://test.com/image.jpg"
         )
+    }
+}
+
+final class MockLocationService: LocationServiceProtocol {
+
+    func requestLocation(completion: @escaping (CLLocation?) -> Void) {
+
+        DispatchQueue.main.async {
+            completion(CLLocation(latitude: 1, longitude: 1))
+        }
     }
 }
 ```
@@ -301,7 +352,11 @@ MiniMapView(
 E carregamento assíncrono de imagens:
 
 ```swift
-let result = await imageService.loadImage(...)
+let result = await imageService.loadImage(
+    imageURL: flight.imageURL,
+    localPath: flight.localImagePath,
+    id: flight.id
+)
 ```
 
 ---
