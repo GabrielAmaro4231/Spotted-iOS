@@ -1,6 +1,6 @@
 # 📄 Spotted — Aplicativo de Registro de Observação de Aeronaves
 
-## 📌 Introdução
+## Introdução
 
 O **Spotted** é um aplicativo iOS desenvolvido em **SwiftUI** que permite registrar e acompanhar aeronaves avistadas. A ideia é simples: o usuário informa a matrícula de uma aeronave, e o app registra automaticamente a localização, a data e, quando possível, complementa os dados com informações obtidas de uma API externa, como modelo e imagem.
 
@@ -8,7 +8,7 @@ Este projeto foi originalmente desenvolvido como parte da disciplina de desenvol
 
 ---
 
-## 📁 Organização do Repositório
+## Organização do Repositório
 
 Este repositório contém duas versões do projeto:
 
@@ -20,13 +20,13 @@ Este repositório contém duas versões do projeto:
 
 ---
 
-## 🎥 Vídeo Demonstrativo
+## Vídeo Demonstrativo
 
 https://youtu.be/TrOd7Q5rcpQ
 
 ---
 
-## 🧭 Visão Geral da Estrutura
+## Visão Geral da Estrutura
 
 O projeto foi dividido em partes bem definidas, cada uma com uma responsabilidade específica:
 
@@ -45,7 +45,7 @@ Essa divisão evita que a lógica fique concentrada em um único lugar e facilit
 
 ---
 
-## 🧱 Como o aplicativo está organizado
+## Como o aplicativo está organizado
 
 A base do projeto segue o padrão MVVM, que separa a interface da lógica e dos dados.
 
@@ -94,7 +94,7 @@ Essa separação evita que a View tenha lógica de negócio e facilita a manuten
 
 ---
 
-## 🔌 Como as dependências são organizadas
+## Como as dependências são organizadas
 
 Ao invés de criar objetos diretamente dentro das classes, as dependências são passadas via inicializador.
 
@@ -133,7 +133,7 @@ Esse padrão ajuda a manter o código desacoplado e facilita a substituição de
 
 ---
 
-## 💾 Como os dados são persistidos
+## Como os dados são persistidos
 
 O acesso aos dados é feito através de um repositório, que abstrai a forma como os dados são armazenados.
 
@@ -163,7 +163,7 @@ Isso permite que o restante da aplicação não precise conhecer detalhes da per
 
 ---
 
-## 🌐 Integrações externas
+## Integrações externas
 
 As responsabilidades relacionadas a serviços externos foram isoladas em classes específicas.
 
@@ -207,7 +207,7 @@ Cada serviço tem uma responsabilidade específica, evitando mistura de funçõe
 
 ---
 
-## 🌍 Suporte a idiomas (i18n)
+## Suporte a idiomas (i18n)
 
 O aplicativo também possui suporte a internacionalização, com textos disponíveis em:
 
@@ -218,7 +218,7 @@ Isso permite que a interface se adapte automaticamente ao idioma configurado no 
 
 ---
 
-## 🧪 Testes
+## Testes
 
 A lógica principal foi escrita de forma a permitir testes isolados.
 Um exemplo simples é a função de normalização:
@@ -273,7 +273,7 @@ Essa abordagem permite testar o comportamento da aplicação sem depender de ser
 
 ---
 
-## 📱 Interface do usuário
+## Interface do usuário
 
 O aplicativo possui quatro telas principais:
 
@@ -307,7 +307,7 @@ let result = await imageService.loadImage(...)
 
 ---
 
-## 🧾 Considerações finais
+## Considerações finais
 
 O projeto foi estruturado com foco em organização e clareza, separando responsabilidades e evitando dependências diretas entre componentes.
 A utilização de protocolos, divisão em camadas e testes unitários contribui para um código mais previsível e mais fácil de manter.
