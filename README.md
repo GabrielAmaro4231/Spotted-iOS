@@ -1,4 +1,4 @@
-# 📄 Spotted – Projeto de Aplicativo iOS
+# 📄 Spotted — Aplicativo de Registro de Observação de Aeronaves
 
 ## 📌 Introdução
 
