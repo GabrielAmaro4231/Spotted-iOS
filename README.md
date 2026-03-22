@@ -38,7 +38,6 @@ Spotted/
 ├── Views/
 ├── Services/
 ├── Repositories/
-├── Tests/
 ```
 
 Essa divisão evita que a lógica fique concentrada em um único lugar e facilita tanto a leitura quanto a manutenção do código.
